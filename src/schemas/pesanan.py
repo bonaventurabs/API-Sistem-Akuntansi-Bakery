@@ -2,8 +2,10 @@ from typing import Optional,List
 
 from pydantic import BaseModel
 from datetime import datetime
+from src.schemas import pembayaran
 
 from src.schemas.produk import ProdukBase, ProdukInDBBase
+from src.schemas.pembayaran import PembayaranBase, PembayaranInDBBase
 
 
 class ItemPesanan(BaseModel):
@@ -22,6 +24,7 @@ class PesananBase(BaseModel):
     datetime: datetime.now()
     paymentStatus: Optional[bool] = False
     itemPesanan: List[ItemPesanan]
+    pembayaran: Optional[PembayaranBase] = None
 
 
 # Properties to receive on pesanan creation
@@ -40,6 +43,7 @@ class PesananInDBBase(PesananBase):
     datetime: datetime
     paymentStatus: bool
     itemPesanan: List[ItemPesananinDB]
+    pembayaran: Optional[PembayaranInDBBase] = None
 
     class Config:
         orm_mode = True
