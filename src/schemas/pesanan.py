@@ -1,8 +1,7 @@
 from typing import Optional,List
 
 from pydantic import BaseModel
-from datetime import datetime
-from src.schemas import pembayaran
+from datetime import date, datetime 
 
 from src.schemas.produk import ProdukBase, ProdukInDBBase
 from src.schemas.pembayaran import PembayaranBase, PembayaranInDBBase
@@ -21,7 +20,7 @@ class ItemPesananinDB(BaseModel):
 
 # Shared properties
 class PesananBase(BaseModel):
-    datetime: datetime.now()
+    dateTime: datetime = datetime.now()
     paymentStatus: Optional[bool] = False
     itemPesanan: List[ItemPesanan]
     pembayaran: Optional[PembayaranBase] = None

@@ -18,7 +18,7 @@ class ItemPengeluaraninDB(BaseModel):
 
 # Shared properties
 class PengeluaranBase(BaseModel):
-    datetime: datetime.now()
+    dateTime: datetime
     itemPengeluaran: List[ItemPengeluaran]
 
 

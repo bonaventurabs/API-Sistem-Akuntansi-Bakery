@@ -5,13 +5,13 @@ from pydantic import BaseModel
 
 # Shared properties
 class ProdukBase(BaseModel):
-    productName: Optional[str] = None
+    productname: Optional[str] = None
     price: Optional[int] = None
 
 
 # Properties to receive on produk creation
 class ProdukCreate(ProdukBase):
-    productName: str
+    productname: str
     price: int
 
 
@@ -21,9 +21,9 @@ class ProdukUpdate(ProdukBase):
 
 
 # Properties shared by models stored in DB
-class ProdukInDBBase(ProdukBase):
-    productId: str
-    productName: str
+class ProdukInDBBase(BaseModel):
+    productid: str
+    productname: str
     price: int
 
     class Config:

@@ -1,10 +1,15 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy.sql.expression import null
 from sqlalchemy import Column,  DateTime, ForeignKey, Integer, String ,Boolean, Text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
+from .pesanan import Pesanan
 from src.database import Base
 
+if TYPE_CHECKING:
+    from .pesanan import Pesanan
 
 class Pembayaran(Base):
     __tablename__ = "Pembayaran"

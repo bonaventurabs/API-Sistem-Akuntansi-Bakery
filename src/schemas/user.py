@@ -5,8 +5,8 @@ from enum import Enum
 
 
 class Role(Enum):
-    CEO = 1
-    admin = 2
+    admin = 1
+    CEO = 2
 
 class User(BaseModel):
     username: str
