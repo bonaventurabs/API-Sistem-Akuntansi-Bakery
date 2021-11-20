@@ -12,7 +12,7 @@ class enum_roles(enum.Enum):
     CEO = 2
 
 class Pengguna(Base):
-    __tablename__ = "Pengguna"
+    __tablename__ = "pengguna"
 
     username = Column(String(15), primary_key=True)
     password = Column(String(50), nullable=False)

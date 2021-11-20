@@ -6,9 +6,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
 from src.database import Base
-
-# if TYPE_CHECKING:
-    # from .pesanan import Pesanan, ItemPesanan
+from .pesanan import Pesanan, ItemPesanan
 
 class Produk(Base):
     __tablename__ = "produk"
@@ -17,6 +15,6 @@ class Produk(Base):
     productname = Column(String, nullable=False)
     price = Column(Integer, nullable=False)
 
-    # orders = relationship("Pesanan", secondary = "ItemPesanan", back_populates="items")
+    orders = relationship("ItemPesanan", back_populates="product")
     # orders = relationship('Pesanan', secondary = 'ItemPesanan')
 

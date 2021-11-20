@@ -12,14 +12,14 @@ if TYPE_CHECKING:
     from .pesanan import Pesanan
 
 class Pembayaran(Base):
-    __tablename__ = "Pembayaran"
+    __tablename__ = "pembayaran"
 
-    paymentId = Column(String(12), primary_key=True)
-    orderId = Column(String(12), ForeignKey("order.orderId"), nullable=False)
+    paymentid = Column(String(12), primary_key=True)
+    orderid = Column(String(12), ForeignKey("pesanan.orderid"), nullable=False)
     amount = Column(Integer, nullable=False)
     change = Column(Integer, nullable=False)
 
-    order = relationship("Pesanan")
+    order = relationship("Pesanan", back_populates="payment")
     # order = relationship("Pesanan", back_populates="Pembayaran")
 
 

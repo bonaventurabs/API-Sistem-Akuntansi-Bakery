@@ -10,28 +10,27 @@ from src.database import Base
 
 if TYPE_CHECKING:
     from .produk import Produk
+    from .pembayaran import Pembayaran
+
 
 class Pesanan(Base):
-    __tablename__ = "Pesanan"
+    __tablename__ = "pesanan"
 
-    orderId = Column(String(12), primary_key=True)
-    dateTime = Column(DateTime(timezone=True), server_default=func.now())
-    paymentStatus = Column(Boolean, nullable=False, default=False)
+    orderid = Column(String(12), primary_key=True)
+    datetime = Column(DateTime, server_default=func.now())
+    paymentstatus = Column(Boolean, nullable=False, default=False)
 
-    items = relationship("Produk", secondary = "ItemPesanan", back_populates="orders")
+    products = relationship("ItemPesanan", back_populates="order", cascade="all, delete, delete-orphan")
+    payment = relationship("Pembayaran", back_populates="order",uselist=False, cascade="all, delete, delete-orphan")
     # items = relationship('Produk', secondary = 'ItemPesanan')
     # orderPayment = relationship("Pembayaran", back_populates="Pesanan")
 
 
 class ItemPesanan(Base):
-    __tablename__ = "ItemPesanan"
+    __tablename__ = "itempesanan"
 
-    productId = Column(String(12), ForeignKey('Produk.productId'), primary_key=True)
-    orderId = Column(String(12), ForeignKey('Pesanan.orderId'), primary_key=True)
+    productid = Column(String(12), ForeignKey('produk.productid'), primary_key=True)
+    orderid = Column(String(12), ForeignKey('pesanan.orderid'), primary_key=True)
     amount = Column(Integer, nullable=False)
-
-
-# ItemPesanan = Table('ItemPesanan',
-#     Column('productid', String(12), ForeignKey('Produk.productid'), primary_key=True),
-#     Column('orderid', String(12), ForeignKey('Pesanan.orderid'), primary_key=True),
-#     Column('amount', nullable=False))
+    order = relationship("Pesanan", back_populates="products")
+    product = relationship("Produk", back_populates="orders")

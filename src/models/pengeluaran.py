@@ -8,28 +8,19 @@ from src.database import Base
 
 
 class Pengeluaran(Base):
-    __tablename__ = "Pengeluaran"
+    __tablename__ = "pengeluaran"
 
-    expenseId = Column(String(12), primary_key=True)
-    dateTime = Column(DateTime(timezone=True), server_default=func.now())
+    expenseid = Column(String(12), primary_key=True)
+    datetime = Column(DateTime, server_default=func.now())
 
-    items = relationship("ItemPengeluaran", backref="Pengeluaran")
+    items = relationship("ItemPengeluaran", back_populates="expense", cascade="all, delete, delete-orphan")
 
 class ItemPengeluaran(Base):
-    __tablename__ = "ItemPengeluaran"
+    __tablename__ = "itempengeluaran"
 
-    itemId = Column(String(12), primary_key=True)
-    expenseId = Column(String(12), ForeignKey("expense.expenseId"), nullable=False)
+    itemid = Column(String(12), primary_key=True)
+    expenseid = Column(String(12), ForeignKey("pengeluaran.expenseid"), nullable=False)
     nama = Column(String(100), nullable=False)
     harga = Column(Integer, nullable=False)
 
-    expense = relationship("Pengeluaran")
-    
-    # owner_id = Column(Integer, ForeignKey("user.id"))
-    # owner = relationship("User", back_populates="items")
-
-    # time_created = Column(DateTime(timezone=True), server_default=func.now())
-    # time_updated = Column(DateTime(timezone=True), onupdate=func.now())
-    # author_id = Column(Integer, ForeignKey("author.id"))
-
-    # author = relationship("Author")
+    expense = relationship("Pengeluaran", back_populates="items")
