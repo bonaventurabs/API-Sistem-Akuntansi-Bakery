@@ -34,6 +34,7 @@ async def root(request: Request):
 # Request token c
 @app.post("/login", response_model=schemas.Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    # sha256
     pass
 
 
