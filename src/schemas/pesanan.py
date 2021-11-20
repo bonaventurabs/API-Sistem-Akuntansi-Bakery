@@ -7,42 +7,43 @@ from src.schemas.produk import ProdukBase, ProdukInDBBase
 from src.schemas.pembayaran import PembayaranBase, PembayaranInDBBase
 
 
-class ItemPesanan(BaseModel):
-    produk: ProdukBase
+class ItemPesananBase(BaseModel):
+    productid: Optional[str] = None
+    amount: Optional[int] = None
+
+class ItemPesananCreate(ItemPesananBase):
+    productid: str = "PR00000"
     amount: int
 
+class ItemPesananUpdate(ItemPesananBase):
+    pass
 
-class ItemPesananinDB(BaseModel):
-    produk: ProdukInDBBase
-    orderId: str
+class ItemPesanan(ItemPesananBase):
+    productid: str = "PR00000"
     amount: int
+    orderid: str = "OR00000"
 
 
 # Shared properties
 class PesananBase(BaseModel):
-    dateTime: datetime = datetime.now()
-    paymentStatus: Optional[bool] = False
-    itemPesanan: List[ItemPesanan]
-    pembayaran: Optional[PembayaranBase] = None
+    paymentstatus: Optional[bool] = False
 
 
 # Properties to receive on pesanan creation
 class PesananCreate(PesananBase):
-    pass
+    itempesanan: List[ItemPesananCreate] 
 
 
 # Properties to receive on pesanan update
 class PesananUpdate(PesananBase):
-    pass
+    itempesanan: Optional[List[ItemPesananUpdate]]
 
 
 # Properties shared by models stored in DB
 class PesananInDBBase(PesananBase):
-    orderId: str
+    orderid: str = "OR00000"
     datetime: datetime
-    paymentStatus: bool
-    itemPesanan: List[ItemPesananinDB]
-    pembayaran: Optional[PembayaranInDBBase] = None
+    paymentstatus: bool
 
     class Config:
         orm_mode = True
@@ -50,7 +51,8 @@ class PesananInDBBase(PesananBase):
 
 # Properties to return to client
 class Pesanan(PesananInDBBase):
-    pass
+    itempesanan: List[ItemPesanan] = []
+    totalprice: int = 0
 
 
 # Properties properties stored in DB

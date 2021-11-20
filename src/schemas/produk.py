@@ -22,7 +22,7 @@ class ProdukUpdate(ProdukBase):
 
 # Properties shared by models stored in DB
 class ProdukInDBBase(BaseModel):
-    productid: str
+    productid: str = "PR00000"
     productname: str
     price: int
 

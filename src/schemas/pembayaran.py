@@ -6,24 +6,22 @@ from pydantic import BaseModel
 # Shared properties
 class PembayaranBase(BaseModel):
     amount: Optional[int] = None
-    change: Optional[int] = None
 
 
 # Properties to receive on pembayaran creation
 class PembayaranCreate(PembayaranBase):
     amount: int
-    change: int
 
 
 # Properties to receive on pembayaran update
 class PembayaranUpdate(PembayaranBase):
-    pass
+    amount: int
 
 
 # Properties shared by models stored in DB
-class PembayaranInDBBase(PembayaranBase):
-    paymentId: str
-    orderId: str
+class PembayaranInDBBase(BaseModel):
+    paymentid: str = "PY00000"
+    orderid: str = "OR00000"
     amount: int
     change: int
 

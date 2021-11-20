@@ -4,39 +4,42 @@ from pydantic import BaseModel
 from datetime import datetime
 
 
+class ItemPengeluaranBase(BaseModel):
+    nama: Optional[str] = None
+    harga: Optional[int] = None
+
+class ItemPengeluaranCreate(ItemPengeluaranBase):
+    nama: str 
+    harga: int
+
+class ItemPengeluaranUpdate(ItemPengeluaranBase):
+    pass
+
 class ItemPengeluaran(BaseModel):
+    itemid: str = "EI0000"
+    expenseid: str = "EX0000"
     nama: str
     harga: int
 
-
-class ItemPengeluaraninDB(BaseModel):
-    itemId: str
-    expenseId: str
-    nama: str
-    harga: int
-
-
-# Shared properties
-class PengeluaranBase(BaseModel):
-    dateTime: datetime
-    itemPengeluaran: List[ItemPengeluaran]
+    class Config:
+        orm_mode = True
 
 
 # Properties to receive on Pengeluaran creation
-class PengeluaranCreate(PengeluaranBase):
-    pass
+class PengeluaranCreate(BaseModel):
+    itempengeluaran: List[ItemPengeluaranCreate]
 
 
 # Properties to receive on Pengeluaran update
-class PengeluaranUpdate(PengeluaranBase):
-    pass
+class PengeluaranUpdate(BaseModel):
+    itempengeluaran: List[ItemPengeluaranUpdate]
 
 
 # Properties shared by models stored in DB
-class PengeluaranInDBBase(PengeluaranBase):
-    expenseId: str
+class PengeluaranInDBBase(BaseModel):
+    expenseid: str = "EX0000"
     datetime: datetime
-    itemPengeluaran: List[ItemPengeluaraninDB]
+    
 
     class Config:
         orm_mode = True
@@ -44,7 +47,7 @@ class PengeluaranInDBBase(PengeluaranBase):
 
 # Properties to return to client
 class Pengeluaran(PengeluaranInDBBase):
-    pass
+    itempengeluaran: List[ItemPengeluaran] = []
 
 
 # Properties properties stored in DB
