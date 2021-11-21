@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 
 from src import models, schemas
-from .auth import UserHandler
-from .database import get_db
+from src.auth import UserHandler
+from src.database import get_db
 
 
 app = FastAPI() 
