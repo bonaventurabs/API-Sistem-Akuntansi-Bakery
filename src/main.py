@@ -34,26 +34,27 @@ async def root(request: Request):
 
 # Request token 
 @app.post("/login", response_model=schemas.Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    # sha256
-    user = UserHandler.authenticate_user(form_data.username, form_data.password)
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = UserHandler.authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
     access_token_expires = timedelta(minutes=UserHandler.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = UserHandler.create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
+  
     return schemas.Token(**{"access_token": access_token, "token_type": "bearer"})
 
 
 ##Product
 # Add Product
 @app.post('/products',response_model=schemas.Produk, tags=['product']) 
-async def create_product(new_produk: schemas.ProdukCreate, db: Session = Depends(get_db)): 
+async def create_product(new_produk: schemas.ProdukCreate, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)): 
     db_produk = db.query(models.Produk).filter(models.Produk.productname==new_produk.productname).first()
     if db_produk is not None:
         raise HTTPException(status_code=400,detail="Product already exists")
@@ -73,13 +74,13 @@ async def create_product(new_produk: schemas.ProdukCreate, db: Session = Depends
     
 # Read All Products
 @app.get('/products',response_model=List[schemas.Produk], tags=['product']) 
-async def get_all_products(db: Session = Depends(get_db)): 
+async def get_all_products(db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)): 
     all_produk = db.query(models.Produk).all()
     return all_produk
 
 # Read Spesific Product
 @app.get('/products/{productId}',response_model=schemas.Produk , tags=['product']) 
-async def get_product(productId: str, db: Session = Depends(get_db)): 
+async def get_product(productId: str, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)): 
     spesific_produk = db.query(models.Produk).filter(models.Produk.productid == productId).first()
     if spesific_produk is None:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -87,7 +88,7 @@ async def get_product(productId: str, db: Session = Depends(get_db)):
 
 # Update Specific Product
 @app.put('/products/{productId}',response_model=schemas.Produk, tags=['product']) 
-async def update_product(productId: str, update_produk: schemas.ProdukUpdate, db: Session = Depends(get_db)):
+async def update_product(productId: str, update_produk: schemas.ProdukUpdate, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)):
     produk = db.query(models.Produk).filter(models.Produk.productid == productId).first()
     if produk is None:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -107,7 +108,7 @@ async def update_product(productId: str, update_produk: schemas.ProdukUpdate, db
 
 #Delete Spesific Product
 @app.delete('/products/{productId}',response_model=schemas.Produk, tags=['product']) 
-async def delete_product(productId: str, db: Session = Depends(get_db)):
+async def delete_product(productId: str, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)):
     produk = db.query(models.Produk).filter(models.Produk.productid == productId).first()
     if produk is None:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -119,7 +120,7 @@ async def delete_product(productId: str, db: Session = Depends(get_db)):
 ##Order
 # Add New Order
 @app.post('/orders', response_model=schemas.Pesanan, tags=['order']) 
-async def create_order(new_order: schemas.PesananCreate, db: Session = Depends(get_db)): 
+async def create_order(new_order: schemas.PesananCreate, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)): 
     try:
         db_pesanan_id = db.query(func.max(models.Pesanan.orderid)).scalar()
     except:
@@ -149,7 +150,7 @@ async def create_order(new_order: schemas.PesananCreate, db: Session = Depends(g
 
 # Read All Orders
 @app.get('/orders', response_model=List[schemas.Pesanan], tags=['order']) 
-async def get_all_orders(db: Session = Depends(get_db)): 
+async def get_all_orders(db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)): 
     all_orders = db.query(models.Pesanan).all()
     orders = []
     for order in all_orders:
@@ -158,7 +159,7 @@ async def get_all_orders(db: Session = Depends(get_db)):
 
 # Read Spesific Order
 @app.get('/orders/{orderId}', response_model=schemas.Pesanan, tags=['order']) 
-async def get_order(orderId: str, db: Session = Depends(get_db)): 
+async def get_order(orderId: str, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)): 
     spesific_order = db.query(models.Pesanan).filter(models.Pesanan.orderid == orderId).first()
     if spesific_order is None:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -168,7 +169,7 @@ async def get_order(orderId: str, db: Session = Depends(get_db)):
 
 # Update Specific Order
 @app.put('/orders/{orderId}', response_model=schemas.Pesanan, tags=['order']) 
-async def update_order(orderId: str, update_order: schemas.PesananUpdate, db: Session = Depends(get_db)):
+async def update_order(orderId: str, update_order: schemas.PesananUpdate, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)):
     order = db.query(models.Pesanan).filter(models.Pesanan.orderid == orderId).first()
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -197,7 +198,7 @@ async def update_order(orderId: str, update_order: schemas.PesananUpdate, db: Se
 
 #Delete Spesific Order
 @app.delete('/orders/{orderId}', response_model=schemas.PesananInDB, tags=['order']) 
-async def delete_order(orderId: str, db: Session = Depends(get_db)):
+async def delete_order(orderId: str, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)):
     order = db.query(models.Pesanan).filter(models.Pesanan.orderid == orderId).first()
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -208,7 +209,7 @@ async def delete_order(orderId: str, db: Session = Depends(get_db)):
 ##Payment
 # Add New Payment
 @app.post('/orders/{orderId}/pay', response_model=schemas.Pembayaran, tags=['payment']) 
-async def create_payment(orderId: str, new_payment: schemas.PembayaranCreate, db: Session = Depends(get_db)):
+async def create_payment(orderId: str, new_payment: schemas.PembayaranCreate, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)):
     order = db.query(models.Pesanan).filter(models.Pesanan.orderid == orderId).first()
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -239,7 +240,7 @@ async def create_payment(orderId: str, new_payment: schemas.PembayaranCreate, db
 
 # Read Spesific Payment
 @app.get('/orders/{orderId}/pay',response_model=schemas.Pembayaran, tags=['payment']) 
-async def get_payment(orderId: str, db: Session = Depends(get_db)): 
+async def get_payment(orderId: str, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)): 
     order = db.query(models.Pesanan).filter(models.Pesanan.orderid == orderId).first()
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -251,7 +252,7 @@ async def get_payment(orderId: str, db: Session = Depends(get_db)):
 
 # Update Specific Payment
 @app.put('/orders/{orderId}/pay', response_model=schemas.Pembayaran, tags=['payment']) 
-async def update_payment(orderId: str, update_payment: schemas.PembayaranUpdate, db: Session = Depends(get_db)):
+async def update_payment(orderId: str, update_payment: schemas.PembayaranUpdate, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)):
     order = db.query(models.Pesanan).filter(models.Pesanan.orderid == orderId).first()
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -279,7 +280,7 @@ async def update_payment(orderId: str, update_payment: schemas.PembayaranUpdate,
 
 #Delete Spesific Payment
 @app.delete('/orders/{orderId}/pay', response_model=schemas.Pembayaran, tags=['payment']) 
-async def delete_payment(orderId: str, db: Session = Depends(get_db)):
+async def delete_payment(orderId: str, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)):
     order = db.query(models.Pembayaran).filter(models.Pembayaran.orderid == orderId).first()
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -296,7 +297,7 @@ async def delete_payment(orderId: str, db: Session = Depends(get_db)):
 ##Expense
 # Add New Expense
 @app.post('/expenses', response_model=schemas.Pengeluaran, tags=['expense']) 
-async def create_expense(new_expense: schemas.PengeluaranCreate, db: Session = Depends(get_db)): 
+async def create_expense(new_expense: schemas.PengeluaranCreate, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)): 
     try:
         db_pengeluaran_id = db.query(func.max(models.Pengeluaran.expenseid)).scalar()
     except:
@@ -334,7 +335,7 @@ async def create_expense(new_expense: schemas.PengeluaranCreate, db: Session = D
 
 # Read All Expenses
 @app.get('/expenses', response_model=List[schemas.Pengeluaran], tags=['expense']) 
-async def get_all_expenses(db: Session = Depends(get_db)): 
+async def get_all_expenses(db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)): 
     all_expenses = db.query(models.Pengeluaran).all()
     expenses = []
     for expense in all_expenses:
@@ -343,7 +344,7 @@ async def get_all_expenses(db: Session = Depends(get_db)):
 
 # Read Spesific Expense
 @app.get('/expenses/{expenseId}', response_model=schemas.Pengeluaran, tags=['expense']) 
-async def get_expense(expenseId: str, db: Session = Depends(get_db)): 
+async def get_expense(expenseId: str, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)): 
     expense = db.query(models.Pengeluaran).filter(models.Pengeluaran.expenseid == expenseId).first()
     if expense is None:
         raise HTTPException(status_code=404, detail="Expense not found")
@@ -352,7 +353,7 @@ async def get_expense(expenseId: str, db: Session = Depends(get_db)):
 
 # Update Specific Expense
 @app.put('/expenses/{expenseId}', response_model=schemas.Pengeluaran, tags=['expense']) 
-async def update_expense(expenseId: str, update_expense: schemas.PengeluaranUpdate, db: Session = Depends(get_db)):
+async def update_expense(expenseId: str, update_expense: schemas.PengeluaranUpdate, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)):
     expense = db.query(models.Pengeluaran).filter(models.Pengeluaran.expenseid == expenseId).first()
     if expense is None:
         raise HTTPException(status_code=404, detail="Expense not found")
@@ -388,7 +389,7 @@ async def update_expense(expenseId: str, update_expense: schemas.PengeluaranUpda
 
 # Update Expense Expense Based on Item
 @app.put('/expenses/{expenseId}/{itemId}', response_model=schemas.ItemPengeluaran, tags=['expense']) 
-async def update_expense(expenseId: str, itemId: str, update_item: schemas.ItemPengeluaranUpdate, db: Session = Depends(get_db)):
+async def update_expense(expenseId: str, itemId: str, update_item: schemas.ItemPengeluaranUpdate, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)):
     expense = db.query(models.Pengeluaran).filter(models.Pengeluaran.expenseid == expenseId).first()
     if expense is None:
         raise HTTPException(status_code=404, detail="Expense not found")
@@ -411,7 +412,7 @@ async def update_expense(expenseId: str, itemId: str, update_item: schemas.ItemP
 
 #Delete Spesific Expense
 @app.delete('/expenses/{expenseId}',response_model=schemas.PengeluaranInDB, tags=['expense']) 
-async def delete_expense(expenseId: str, db: Session = Depends(get_db)):
+async def delete_expense(expenseId: str, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)):
     expense = db.query(models.Pengeluaran).filter(models.Pengeluaran.expenseid == expenseId).first()
     if expense is None:
         raise HTTPException(status_code=404, detail="Expense not found")
@@ -421,7 +422,7 @@ async def delete_expense(expenseId: str, db: Session = Depends(get_db)):
 
 #Delete An Item in Expense
 @app.delete('/expenses/{expenseId}/{itemId}',response_model=schemas.ItemPengeluaran, tags=['expense']) 
-async def delete_expense(expenseId: str, itemId: str, db: Session = Depends(get_db)):
+async def delete_expense(expenseId: str, itemId: str, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)):
     expense = db.query(models.Pengeluaran).filter(models.Pengeluaran.expenseid == expenseId).first()
     if expense is None:
         raise HTTPException(status_code=404, detail="Expense not found")
@@ -439,7 +440,7 @@ async def delete_expense(expenseId: str, itemId: str, db: Session = Depends(get_
 ##Invoice
 # Get Invoice
 @app.get('/orders/{orderId}/invoice', response_model=schemas.Invoice, tags=['invoice']) 
-async def get_invoice(orderId: str, db: Session = Depends(get_db)): 
+async def get_invoice(orderId: str, db: Session = Depends(get_db), current_user: schemas.User = Depends(UserHandler.get_current_user)): 
     order = db.query(models.Pesanan).filter(models.Pesanan.orderid == orderId).first()
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")
