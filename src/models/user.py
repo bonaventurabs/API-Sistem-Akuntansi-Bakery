@@ -8,8 +8,8 @@ import enum
 
 
 class enum_roles(enum.Enum):
-    admin = 1
-    CEO = 2
+    admin = "admin"
+    CEO = "CEO"
 
 class Pengguna(Base):
     __tablename__ = "pengguna"
