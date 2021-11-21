@@ -12,11 +12,6 @@ from src import models, schemas
 from .auth import UserHandler
 from .database import get_db
 
-# from .schemas import CreateJobRequest
-# from .models import Job
-
-# from schema import Token, User, Item, TokenData
-# from auth import UserHandler
 
 app = FastAPI() 
 
