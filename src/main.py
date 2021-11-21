@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from os import error, name
 from typing import Optional, List
 
 from fastapi import FastAPI, HTTPException, status, Depends, Request
