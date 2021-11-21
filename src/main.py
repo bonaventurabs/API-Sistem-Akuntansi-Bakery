@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 
 from src import models, schemas
+from .auth import UserHandler
 from .database import get_db
 
 # from .schemas import CreateJobRequest
@@ -31,11 +32,22 @@ async def root(request: Request):
         "Path List": url_list
     }
 
-# Request token c
+# Request token 
 @app.post("/login", response_model=schemas.Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     # sha256
-    pass
+    user = UserHandler.authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=UserHandler.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = UserHandler.create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return schemas.Token(**{"access_token": access_token, "token_type": "bearer"})
 
 
 ##Product

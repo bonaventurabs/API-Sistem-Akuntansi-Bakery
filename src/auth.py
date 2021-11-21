@@ -1,36 +1,45 @@
-import json
 from datetime import datetime, timedelta
 from typing import Optional
 
 from jose import JWTError, jwt
-from fastapi import FastAPI, HTTPException, status, Depends
+from fastapi import HTTPException, status, Depends
+from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, oauth2
+from passlib.context import CryptContext
+from sqlalchemy.orm import Session
 
-from schema import Token, User, TokenData
+from src.schemas import Token, User, TokenData
+from src.models import Pengguna
+from .database import get_db
 
 class UserHandler():
-    # Open and read user.json file
-    with open('user.json', 'r') as read_file: 
-        users = json.load(read_file)
-
     SECRET_KEY = "7fb37f84964f9eabe3898d94b5a9a0fb3131ced462886a8ce43dab60ec02d58f"
     ALGORITHM = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
+    pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-    def get_user(self, username: str):
-        for user in self.users:
-            if user["username"] == username:
-                return User(**user)
+    def verify_password(self, plain_password, hashed_password):
+        return self.pwd_context.verify(plain_password, hashed_password)
 
-    def authenticate_user(self, username: str, password: str):
-        user = self.get_user(username)
+    def get_password_hash(self, password):
+        return self.pwd_context.hash(password)
+
+    def get_user(self, username: str, db: Session = Depends(get_db)):
+        user = db.query(Pengguna).filter(Pengguna.productid == username).first()
+        if user is not None:
+            user_dict = jsonable_encoder(user)
+            return User(**user_dict)
+    # import hashlib
+    # x = hashlib.sha256(a.encode('utf-8')).hexdigest()
+
+    def authenticate_user(self, username: str, password: str, db: Session = Depends(get_db)):
+        user = self.get_user(username, db)
         if not user:
             return False
-        else:
-            if user.password!=password:
-                return False
+        if not self.verify_password(password, user.password):
+            return False
         return user
 
     def create_access_token(self, data: dict, expires_delta: Optional[timedelta] = None):

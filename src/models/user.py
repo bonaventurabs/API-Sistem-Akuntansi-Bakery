@@ -15,5 +15,5 @@ class Pengguna(Base):
     __tablename__ = "pengguna"
 
     username = Column(String(15), primary_key=True)
-    password = Column(String(50), nullable=False)
+    password = Column(String(127), nullable=False)
     role = Column(Enum(enum_roles), nullable=False)
